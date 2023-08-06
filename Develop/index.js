@@ -1,39 +1,103 @@
-// TODO: Include packages needed for this application
+//Todo: Input lists
+//Todo: autocomplete filepaths
 
-// TODO: Create an array of questions for user input
-const questions = [
-  "What is the title of your project?",
+const fs = require('fs').promises
+const inquirer = require('inquirer')
+const {generateMarkdown} = require('./utils/generateMarkdown');
+const validate = require('./utils/validationFunctions')
+
+const questions = {
+  title: "What is the title of your project?",
   // Description
-    "What was your motivation for creating this project?",
-    "What problem does your project solve and why did you build it?",
-    "What did you learn from this project?",
+    motivation: "What was your motivation for creating this project?",
+    reasons: "What problem does your project solve and why did you build it?",
+    learned: "What did you learn from this project?",
   // Installation
-    "What are the steps required to install your project?",
+    installation: "What are the steps required to install your project?",
   // Usage
-    "How do you use your project?",
-    "How many screenshot do you want to include?",
+    usage: "How do you use your project?",
+    screenshotCount: "How many screenshot do you want to include?",
+    // Screenshot 1
+      screenshotPath: "What is the path to your screenshot?",
   // Credits
-    "How many people did you collaborated with?",
+    peopleCount: "How many people did you collaborated with?",
     // Person 1
-      "What is their name?",
-      "What is the link to their github profile?",
-    "How many resources did you use?",
+      peopleName: "What is their name?",
+      peopleLink: "What is the link to their github profile?",
+    resourceCount: "How many resources did you use?",
     // Resource 1
-      "What is the name of this resource?",
-      "What is the link to this resource?",
+      resourceName: "What is the name of this resource?",
+      resourceLink: "What is the link to this resource?",
   // Issues
-    "How can you report an issue?",
+    issues: "How can you report an issue?",
   // Contributing
-    "How can someone else contribute to this project?",
+    contributing: "How can someone else contribute to this project?",
   // License
-    "What license is your project under?"
-];
+    license: "What license is your project under?"
+};
 
-// TODO: Create a function to write README file
-function writeToFile(fileName, data) {}
+async function writeToFile(fileName, data) {
+  try{
+    await fs.writeFile(fileName, data)
+  }catch(error){
+    console.log("Error writing to file: " + error)
+  }
+}
 
-// TODO: Create a function to initialize app
-function init() {}
+async function askQuestion(question, answerName, validationFunction){
+  return new Promise((resolve, reject) => {
+    inquirer.prompt([
+      {
+        type: 'input',
+        name: answerName,
+        message: question,
+        validate: validationFunction,
+      }
+    ])
+    .then(answer => {resolve(answer)})
+    .catch(error => {reject(error)})
+  })
+}
 
-// Function call to initialize app
-init();
+(async function init() {
+  // Ask questions and put answerers in an answerers object
+    let answers = {}
+
+    answers = {...answers, ...await askQuestion(questions.title, "title", validate.textInput)}
+    // Description
+      answers = {...answers, ...await askQuestion(questions.motivation, "motivation", validate.textInput)}
+      answers = {...answers, ...await askQuestion(questions.reasons, "reasons", validate.textInput)}
+      answers = {...answers, ...await askQuestion(questions.learned, "learned", validate.textInput)}
+    // Installation
+      answers = {...answers, ...await askQuestion(questions.installation, "installation", validate.textInput)}
+    // Usage
+      answers = {...answers, ...await askQuestion(questions.usage, "usage", validate.textInput)}
+      answers = {...answers, ...await askQuestion(questions.screenshotCount, "screenshotCount", validate.intInput)}
+      for(let i=0; i < parseInt(answers.screenshotCount); i++){
+        console.log(`Screenshot ${i+1}:`)
+        answers = {...answers, ...await askQuestion(questions.screenshotPath, `screenshotPath${i}`, validate.textInput)}
+      }
+    // Credits
+      answers = {...answers, ...await askQuestion(questions.peopleCount, "peopleCount", validate.intInput)}
+      for(let i=0; i < parseInt(answers.peopleCount); i++){
+        console.log(`Person ${i+1}:`)
+        answers = {...answers, ...await askQuestion(questions.peopleName, `peopleName${i}`, validate.textInput)}
+        answers = {...answers, ...await askQuestion(questions.peopleLink, `peopleLink${i}`, validate.linkInput)}
+      }
+      answers = {...answers, ...await askQuestion(questions.resourceCount, "resourceCount", validate.intInput)}
+      for(let i=0; i < parseInt(answers.resourceCount); i++){
+        console.log(`Resource ${i+1}:`)
+        answers = {...answers, ...await askQuestion(questions.resourceName, `resourceName${i}`, validate.textInput)}
+        answers = {...answers, ...await askQuestion(questions.resourceLink, `resourceLink${i}`, validate.linkInput)}
+      }
+    // Issues
+      answers = {...answers, ...await askQuestion(questions.issues, "issues", validate.textInput)}
+    // Contributing
+      answers = {...answers, ...await askQuestion(questions.contributing, "contributing", validate.textInput)}
+    // License
+      answers = {...answers, ...await askQuestion(questions.license, "license", validate.textInput)}
+
+    console.log(answers)
+  // Send answerers object to markdown generator
+  // Write markdown data to file
+})()
