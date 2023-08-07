@@ -1,9 +1,6 @@
 //Todo: Input lists
 //Todo: autocomplete filepaths
-//Todo: Add to check if there is data before adding it or titles to the readme
 //Todo: Get where to store readme
-//Todo: License functions
-//Todo: List license
 
 const fs = require('fs').promises
 const inquirer = require('inquirer')
@@ -35,8 +32,24 @@ const questions = {
   // Contributing
     contributing: "How can someone else contribute to this project?",
   // License
-    license: "What license is your project under?"
+    license: "What license do you want your project under?"
 };
+
+const licenses = [
+  'Apache License 2.0',
+  'GNU General Public License v3.0',
+  'MIT License',
+  'BSD 2-Clause "Simplified" License',
+  'BSD 3-Clause "New" or "Revised" License',
+  'Boost Software License 1.0',
+  'Create Commons Zero v1.0 Universal',
+  'Eclipse Public License 2.0',
+  'GNU Affero General Public License v3.0',
+  'GNU General Public License v2.0',
+  'GNU Lesser General Public License v2.1',
+  'Mozilla Public License 2.0',
+  'The Unlicense'
+]
 
 async function writeToFile(fileName, data) {
   try{
@@ -54,6 +67,21 @@ async function askQuestion(question, answerName, validationFunction){
         name: answerName,
         message: question,
         validate: validationFunction,
+      }
+    ])
+    .then(answer => {resolve(answer)})
+    .catch(error => {reject(error)})
+  })
+}
+
+async function askListQuestion(question, list, answerName){
+  return new Promise((resolve, reject) => {
+    inquirer.prompt([
+      {
+        type: 'list',
+        name: answerName,
+        message: question,
+        choices: list
       }
     ])
     .then(answer => {resolve(answer)})
@@ -95,7 +123,7 @@ async function askQuestion(question, answerName, validationFunction){
     // Contributing
       answers = {...answers, ...await askQuestion(questions.contributing, "contributing", validate.textInput)}
     // License
-      answers = {...answers, ...await askQuestion(questions.license, "license", validate.textInput)}
+      answers = {...answers, ...await askListQuestion(questions.license, licenses, "license")}
 
   // Ask were to store readme
   // Send answerers object to markdown generator
