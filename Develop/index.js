@@ -1,17 +1,19 @@
 //Todo: Input lists
 //Todo: autocomplete filepaths
+//Todo: Add to check if there is data before adding it or titles to the readme
+//Todo: Get where to store readme
+//Todo: License functions
+//Todo: List license
 
 const fs = require('fs').promises
 const inquirer = require('inquirer')
-const {generateMarkdown} = require('./utils/generateMarkdown');
+const generateMarkdown = require('./utils/generateMarkdown');
 const validate = require('./utils/validationFunctions')
 
 const questions = {
   title: "What is the title of your project?",
   // Description
-    motivation: "What was your motivation for creating this project?",
-    reasons: "What problem does your project solve and why did you build it?",
-    learned: "What did you learn from this project?",
+    description: "What does your project do or what problem does it solve?",
   // Installation
     installation: "What are the steps required to install your project?",
   // Usage
@@ -65,9 +67,7 @@ async function askQuestion(question, answerName, validationFunction){
 
     answers = {...answers, ...await askQuestion(questions.title, "title", validate.textInput)}
     // Description
-      answers = {...answers, ...await askQuestion(questions.motivation, "motivation", validate.textInput)}
-      answers = {...answers, ...await askQuestion(questions.reasons, "reasons", validate.textInput)}
-      answers = {...answers, ...await askQuestion(questions.learned, "learned", validate.textInput)}
+      answers = {...answers, ...await askQuestion(questions.description, "description", validate.textInput)}
     // Installation
       answers = {...answers, ...await askQuestion(questions.installation, "installation", validate.textInput)}
     // Usage
@@ -97,7 +97,9 @@ async function askQuestion(question, answerName, validationFunction){
     // License
       answers = {...answers, ...await askQuestion(questions.license, "license", validate.textInput)}
 
-    console.log(answers)
+  // Ask were to store readme
   // Send answerers object to markdown generator
+    const markdownReadme = generateMarkdown(answers)
   // Write markdown data to file
+    await writeToFile("README.md", markdownReadme)
 })()
