@@ -55,25 +55,59 @@ function renderLicenseSection(license) {
 }
 
 function generateMarkdown(data){
-  const description = data.description === "" ? "" : `\n## Description\n${data.description}`
-  const installation = data.installation === "" ? "" : `\n## Installation\n${data.installation}`
-  const usage = data.usage === "" ? "" : `\n## Usage\n${data.usage}`
+  let tableOfContents = "\n\n## Table of Contents"
+
+  // Description
+  let description = ""
+  if(data.description !== ""){
+    description = `\n\n## Description\n${data.description}`
+    tableOfContents += `\n- [Description](#description)`
+  }
+
+  // License
+  let license = ""
+  if(data.license !== ""){
+    license = `\n\n## License\n${renderLicenseSection(data.license)}`
+    tableOfContents += `\n- [License](#license)`
+  }
+
+  // Installation
+  let installation = ""
+  if(data.installation !== ""){
+    installation = `\n\n## Installation\n${data.installation}`
+    tableOfContents += `\n- [Installation](#installation)`
+  }
+
+  // Usage
+  let usage = ""
+  if(data.usage !== ""){
+    usage = `\n\n## Usage\n${data.usage}`
+    tableOfContents += `\n- [Usage](#usage)`
+  }
+
   // Get markdown screenshots
   let screenshots = ""
   for(let i=0; i < parseInt(data.screenshotCount); i++){
-    screenshots += `\n[screenshot ${i}](${data[`screenshotPath${i}`]})`
+    screenshots += `\n![screenshot ${i}](${data[`screenshotPath${i}`]})`
   }
 
-  // Should there be any credits?
+  // Credits
   let credits = ""
     let people = ""
     let resources = ""
   const peopleCount = parseInt(data.peopleCount)
   const resourceCount = parseInt(data.resourceCount)
   if(peopleCount !== 0 || resourceCount !== 0){
-    credits = "\n## Credits"
-      people = "\n### People"
-      resources = "\n### Resources"
+    credits = "\n\n## Credits"
+    tableOfContents += `\n- [Credits](#credits)`
+    if(peopleCount !== 0){
+      people = "\n\n### People"
+      tableOfContents += `\n\t- [People](#people)`
+    }
+    if(resourceCount !== 0){
+      resources = "\n\n### Resources"
+      tableOfContents += `\n\t- [Resources](#resources)`
+    }
   }
 
     // Get markdown people references
@@ -86,11 +120,38 @@ function generateMarkdown(data){
       resources += `\n- [${data[`resourceName${i}`]}](${data[`resourceLink${i}`]})`
     }
 
-  const issues = data.issues === "" ? "" : `\n## Issues\n${data.issues}`
-  const contributing = data.contributing === "" ? "" : `\n## Contributing\n${data.contributing}`
-  const license = data.license === "" ? "" : `\n## License\n${renderLicenseSection(data.license)}`
+  // Tests
+  let tests = ""
+  if(data.tests !== ""){
+    tests = `\n\n## Tests\n${data.tests}`
+    tableOfContents += `\n- [Tests](#tests)`
+  }
 
-  return `# ${data.title}${description}${installation}${usage}${screenshots}${credits}${people}${resources}${issues}${contributing}${license}`
+  // Issues/Questions
+  let issues = ""
+  if(data.issues !== ""){
+    issues = `\n
+## Issues/Questions
+${data.issues}
+
+If you have any questions or issues feel free to reach out to me at
+
+Guthub: [${data.github}](https://github.com/${data.github})
+
+or
+
+Email: ${data.email}`
+    tableOfContents += `\n- [Issues/Questions](#issuesquestions)`
+  }
+
+  // Contributing
+  let contributing = ""
+  if(data.contributing !== ""){
+    contributing = `\n\n## Contributing\n${data.contributing}`
+    tableOfContents += `\n- [Contributing](#contributing)`
+  }
+
+  return `# ${data.title}${tableOfContents}${description}${license}${installation}${usage}${screenshots}${credits}${people}${resources}${tests}${issues}${contributing}`
 }
 
 module.exports = generateMarkdown;

@@ -1,7 +1,3 @@
-//Todo: Input lists
-//Todo: autocomplete filepaths
-//Todo: Get where to store readme
-
 const fs = require('fs').promises
 const inquirer = require('inquirer')
 const generateMarkdown = require('./utils/generateMarkdown');
@@ -11,6 +7,8 @@ const questions = {
   title: "What is the title of your project?",
   // Description
     description: "What does your project do or what problem does it solve?",
+  // License
+    license: "What license do you want your project under?",
   // Installation
     installation: "What are the steps required to install your project?",
   // Usage
@@ -19,7 +17,7 @@ const questions = {
     // Screenshot 1
       screenshotPath: "What is the path to your screenshot?",
   // Credits
-    peopleCount: "How many people did you collaborated with?",
+    peopleCount: "How many people did you collaborate with?",
     // Person 1
       peopleName: "What is their name?",
       peopleLink: "What is the link to their github profile?",
@@ -27,12 +25,14 @@ const questions = {
     // Resource 1
       resourceName: "What is the name of this resource?",
       resourceLink: "What is the link to this resource?",
-  // Issues
-    issues: "How can you report an issue?",
+  // Tests
+    tests: "How can someone test your project?",
+  // Issues/Questions
+    issues: "How can someone report an issue or ask a question?",
+    github: "What is your github username?",
+    email: "What is your email?",
   // Contributing
-    contributing: "How can someone else contribute to this project?",
-  // License
-    license: "What license do you want your project under?"
+    contributing: "How can someone contribute to your project?",
 };
 
 const licenses = [
@@ -78,7 +78,7 @@ async function askListQuestion(question, list, answerName){
   return new Promise((resolve, reject) => {
     inquirer.prompt([
       {
-        type: 'list',
+        type: 'rawlist',
         name: answerName,
         message: question,
         choices: list
@@ -92,10 +92,17 @@ async function askListQuestion(question, list, answerName){
 (async function init() {
   // Ask questions and put answerers in an answerers object
     let answers = {}
+    let locationAnswer = await askQuestion("Where would you like your README.md file to be stored?", "location", validate.textInput)
+    let location = locationAnswer.location
+    if(location.charAt(location.length) !== "/"){
+      location += "/"
+    }
 
     answers = {...answers, ...await askQuestion(questions.title, "title", validate.textInput)}
     // Description
       answers = {...answers, ...await askQuestion(questions.description, "description", validate.textInput)}
+    // License
+      answers = {...answers, ...await askListQuestion(questions.license, licenses, "license")}
     // Installation
       answers = {...answers, ...await askQuestion(questions.installation, "installation", validate.textInput)}
     // Usage
@@ -118,16 +125,16 @@ async function askListQuestion(question, list, answerName){
         answers = {...answers, ...await askQuestion(questions.resourceName, `resourceName${i}`, validate.textInput)}
         answers = {...answers, ...await askQuestion(questions.resourceLink, `resourceLink${i}`, validate.linkInput)}
       }
-    // Issues
+    // Tests
+      answers = {...answers, ...await askQuestion(questions.tests, "tests", validate.textInput)}
+    // Issues/Questions
       answers = {...answers, ...await askQuestion(questions.issues, "issues", validate.textInput)}
+      answers = {...answers, ...await askQuestion(questions.github, "github", validate.textInput)}
+      answers = {...answers, ...await askQuestion(questions.email, "email", validate.emailInput)}
     // Contributing
       answers = {...answers, ...await askQuestion(questions.contributing, "contributing", validate.textInput)}
-    // License
-      answers = {...answers, ...await askListQuestion(questions.license, licenses, "license")}
-
-  // Ask were to store readme
   // Send answerers object to markdown generator
     const markdownReadme = generateMarkdown(answers)
   // Write markdown data to file
-    await writeToFile("README.md", markdownReadme)
+    await writeToFile(`${location}README.md`, markdownReadme)
 })()
