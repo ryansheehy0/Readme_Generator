@@ -24,7 +24,7 @@ First, clone the repository with `git clone git@github.com:ryansheehy0/Readme_Ge
 Just run `node {Path to Readme_Generator/Develop}/index.js` and answer the questions when they popup.
 ![screenshot 0](./screenshot_1.png)
 
-![video 0](./video1.mp4)
+[Video Link](https://drive.google.com/file/d/1BPltTsirZM3QlfxEJPlYpTMfgzorpIxj/view)
 
 ## Credits
 
